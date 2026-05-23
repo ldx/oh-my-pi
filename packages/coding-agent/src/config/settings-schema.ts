@@ -232,6 +232,8 @@ export const SETTINGS_SCHEMA = {
 	// ────────────────────────────────────────────────────────────────────────
 	// General settings (no UI)
 	// ────────────────────────────────────────────────────────────────────────
+	// Deprecated: read-only fallback for installs that persisted changelog state
+	// in config.yml before it moved to the agent state directory.
 	lastChangelogVersion: { type: "string", default: undefined },
 
 	// Auth broker — credentials proxied through a remote `omp auth-broker serve`

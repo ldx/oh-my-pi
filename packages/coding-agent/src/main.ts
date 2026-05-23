@@ -61,6 +61,7 @@ import { resolveResumableSession, type SessionInfo, SessionManager } from "./ses
 import { resolvePromptInput } from "./system-prompt";
 import type { LspStartupServerInfo } from "./tools";
 import { getChangelogPath, getNewEntries, parseChangelog } from "./utils/changelog";
+import { readLastChangelogVersion, writeLastChangelogVersion } from "./utils/changelog-state";
 import type { EventBus } from "./utils/event-bus";
 
 async function checkForNewVersion(currentVersion: string): Promise<string | undefined> {
@@ -339,7 +340,7 @@ async function getChangelogForDisplay(parsed: Args): Promise<string | undefined>
 		return undefined;
 	}
 
-	const lastVersion = settings.get("lastChangelogVersion");
+	const lastVersion = await readLastChangelogVersion({ legacyVersion: settings.get("lastChangelogVersion") });
 	if (lastVersion === VERSION) {
 		// Steady state: user already saw the current version's changelog. Skip the file read + parse.
 		return undefined;
@@ -350,15 +351,13 @@ async function getChangelogForDisplay(parsed: Args): Promise<string | undefined>
 
 	if (!lastVersion) {
 		if (entries.length > 0) {
-			settings.set("lastChangelogVersion", VERSION);
-			await flushChangelogVersion();
+			await persistChangelogVersion();
 			return entries.map(e => e.content).join("\n\n");
 		}
 	} else {
 		const newEntries = getNewEntries(entries, lastVersion);
 		if (newEntries.length > 0) {
-			settings.set("lastChangelogVersion", VERSION);
-			await flushChangelogVersion();
+			await persistChangelogVersion();
 			return newEntries.map(e => e.content).join("\n\n");
 		}
 	}
@@ -366,11 +365,11 @@ async function getChangelogForDisplay(parsed: Args): Promise<string | undefined>
 	return undefined;
 }
 
-async function flushChangelogVersion(): Promise<void> {
+async function persistChangelogVersion(): Promise<void> {
 	try {
-		await settings.flush();
+		await writeLastChangelogVersion(VERSION);
 	} catch (error: unknown) {
-		logger.warn("Failed to persist lastChangelogVersion", { error });
+		logger.warn("Failed to persist last changelog version", { error });
 	}
 }
 

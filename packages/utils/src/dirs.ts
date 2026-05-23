@@ -437,6 +437,11 @@ export function getTerminalSessionsDir(agentDir?: string): string {
 	return dirs.agentSubdir(agentDir, "terminal-sessions", "state");
 }
 
+/** Get the changelog acknowledgement state path (~/.omp/agent/last-changelog-version). */
+export function getChangelogStatePath(agentDir?: string): string {
+	return dirs.agentSubdir(agentDir, "last-changelog-version", "state");
+}
+
 /** Get the crash log path (~/.omp/agent/omp-crash.log). */
 export function getCrashLogPath(agentDir?: string): string {
 	return dirs.agentSubdir(agentDir, "omp-crash.log", "state");
